@@ -1,8 +1,21 @@
 from __future__ import annotations
 
+"""Windows WeChat automation via UI Automation.
+
+WeChat 4.1+ may hide its internal UIA tree unless Windows Narrator has been
+enabled before login. When that happens, the main window is visible but the
+search box, session list, and chat input are not exposed to UI Automation.
+"""
+
 import time
 
 from wechat_agent.core.errors import ActionFailed, PlatformNotImplemented, VerificationFailed
+
+
+_WECHAT_UIA_HINT = (
+    "微信 4.1+ 可能默认屏蔽内部 UIA 树。若窗口存在但搜索框、会话列表或输入框不可见，"
+    "请在登录微信前先开启 Windows 讲述人（Narrator），保持一段时间后再关闭，然后重试。"
+)
 
 
 def _load_uiautomation():
@@ -43,7 +56,7 @@ class _WindowsWeChatController:
         self._activate_window(window)
         search_box = self._find_search_box(window)
         if search_box is None:
-            raise ActionFailed("Windows UIA 未找到微信搜索框。")
+            raise ActionFailed(f"Windows UIA 未找到微信搜索框。{_WECHAT_UIA_HINT}")
 
         search_box.Click()
         time.sleep(0.2)
@@ -120,7 +133,7 @@ class _WindowsWeChatController:
         self._activate_window(window)
         chat_edit = self._find_chat_input(window)
         if chat_edit is None:
-            raise ActionFailed("Windows UIA 未找到微信聊天输入框。")
+            raise ActionFailed(f"Windows UIA 未找到微信聊天输入框。{_WECHAT_UIA_HINT}")
 
         chat_edit.Click()
         time.sleep(0.2)
@@ -140,7 +153,9 @@ class _WindowsWeChatController:
         joined_tight = "".join(lines)
         joined_loose = "\n".join(lines)
         if text not in joined_tight and text not in joined_loose:
-            raise VerificationFailed("Windows UIA 校验失败：未在最近消息中找到刚发送的文本。")
+            raise VerificationFailed(
+                f"Windows UIA 校验失败：未在最近消息中找到刚发送的文本。{_WECHAT_UIA_HINT}"
+            )
 
     def _get_wechat_window(self):
         candidates = [
@@ -157,7 +172,7 @@ class _WindowsWeChatController:
         for window in candidates:
             if window.Exists(0, 0):
                 return window
-        raise ActionFailed("未找到微信窗口，请确认微信已启动且窗口可见。")
+        raise ActionFailed(f"未找到微信窗口，请确认微信已启动且窗口可见。{_WECHAT_UIA_HINT}")
 
     def _activate_from_session_list(self, contact_name: str) -> bool:
         try:

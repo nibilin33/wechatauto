@@ -48,7 +48,7 @@ wechat_agent/
 ├─ platform/
 │  ├─ ports.py                  # Window/Screen/Input/A11y 抽象（跨平台）
 │  ├─ macos/                    # macOS 实现（窗口/截图/输入）
-│  └─ windows/                  # Windows 实现（窗口/截图/输入）
+│  └─ windows/                  # Windows 实现（窗口/截图/输入）(参考 https://github.com/Hello-Mr-Crab/pywechat/blob/main/Weixin4.0.md)
 │
 ├─ perception/
 │  ├─ ocr.py                   # OCR封装
