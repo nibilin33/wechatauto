@@ -33,6 +33,25 @@ class _WindowsWeChatController:
         self._auto = _load_uiautomation()
         self._last_contact: str | None = None
 
+    def self_check(self) -> dict:
+        window = self._get_wechat_window()
+        self._activate_window(window)
+
+        search_visible = self._find_search_box(window) is not None
+        session_list_visible = self._has_session_item(window)
+        chat_input_visible = self._find_chat_input(window) is not None
+        automation_ready = search_visible or session_list_visible or chat_input_visible
+
+        payload = {
+            "automation_ready": automation_ready,
+            "search_visible": search_visible,
+            "session_list_visible": session_list_visible,
+            "chat_input_visible": chat_input_visible,
+        }
+        if not automation_ready:
+            raise ActionFailed(f"Windows UIA 自检失败：未发现可自动化控件。{_WECHAT_UIA_HINT}")
+        return payload
+
     def locate_window(self) -> dict:
         window = self._get_wechat_window()
         rect = self._rect_tuple(window)
@@ -223,6 +242,19 @@ class _WindowsWeChatController:
                 return control
         return None
 
+    def _has_session_item(self, window) -> bool:
+        candidates = [
+            window.Control(ClassName="mmui::ChatSessionCell", searchDepth=15),
+            window.ListItemControl(searchDepth=15),
+        ]
+        for control in candidates:
+            try:
+                if control.Exists(0, 0):
+                    return True
+            except Exception:
+                continue
+        return False
+
     def _activate_window(self, window) -> None:
         try:
             window.SetActive()
@@ -304,6 +336,10 @@ class WindowsPlatform:
         controller = self._get_controller()
         bus.emit(run_id, "WindowLocated", controller.locate_window())
 
+        if action_name == "uia_self_check":
+            payload = controller.self_check()
+            bus.emit(run_id, "PlatformSelfCheck", payload)
+            return
         if action_name == "search_contact":
             controller.search_contact(params["name"])
             return

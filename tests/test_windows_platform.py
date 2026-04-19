@@ -16,6 +16,15 @@ class _Controller:
     def __init__(self) -> None:
         self.calls = []
 
+    def self_check(self) -> dict:
+        self.calls.append(("self_check",))
+        return {
+            "automation_ready": True,
+            "search_visible": True,
+            "session_list_visible": False,
+            "chat_input_visible": False,
+        }
+
     def locate_window(self) -> dict:
         self.calls.append(("locate_window",))
         return {
@@ -56,6 +65,24 @@ class _WindowsPlatformForTest(WindowsPlatform):
 
 
 class TestWindowsPlatform(unittest.TestCase):
+    def test_dispatch_runs_uia_self_check(self):
+        controller = _Controller()
+        platform = _WindowsPlatformForTest(controller)
+        bus = _Bus()
+
+        platform.dispatch("uia_self_check", {}, bus=bus, run_id="run-1")
+
+        self.assertIn(("self_check",), controller.calls)
+        self.assertEqual(
+            ("run-1", "PlatformSelfCheck", {
+                "automation_ready": True,
+                "search_visible": True,
+                "session_list_visible": False,
+                "chat_input_visible": False,
+            }),
+            bus.events[-1],
+        )
+
     def test_dispatch_routes_search_contact(self):
         controller = _Controller()
         platform = _WindowsPlatformForTest(controller)

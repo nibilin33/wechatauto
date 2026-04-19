@@ -8,6 +8,7 @@ from wechat_agent.core.errors import ActionFailed, VerificationFailed
 from wechat_agent.core.events import EventBus, JsonlEventLogger
 from wechat_agent.core.planner import plan_closed_loop
 from wechat_agent.core.send_guard import SendGuard, SendGuardConfig, SendBlocked
+from wechat_agent.core.task import ActionSpec, TaskPlan
 from wechat_agent.platform.auto import build_platform
 from wechat_agent.recovery.retry import retry
 from wechat_agent.recovery.fallback import dismiss_modal, go_home
@@ -47,7 +48,10 @@ def run_once(config: AppConfig) -> tuple[str, int]:
     )
 
     platform = build_platform(config.platform, run_dir=run_dir, config=config)
-    plan = plan_closed_loop(config.contact_name, config.recent_n, config.message, config.send)
+    plan = _planned_actions_for_platform(
+        platform_name=getattr(platform, "name", config.platform),
+        plan=plan_closed_loop(config.contact_name, config.recent_n, config.message, config.send),
+    )
 
     bus.emit(run_id, "TaskPlanned", {"goal": plan.goal, "actions": [a.__dict__ for a in plan.actions]})
     logger.info("plan: %s", [a.name for a in plan.actions])
@@ -127,3 +131,10 @@ def _try_recover(*, bus, run_id: str, logger) -> None:
         go_home(bus=bus, run_id=run_id)
     except Exception as exc:  # noqa: BLE001
         logger.debug("go_home failed: %s", exc)
+
+
+def _planned_actions_for_platform(*, platform_name: str, plan: TaskPlan) -> TaskPlan:
+    if platform_name != "windows":
+        return plan
+    actions = [ActionSpec("uia_self_check", {})] + list(plan.actions)
+    return TaskPlan(goal=plan.goal, actions=actions)

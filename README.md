@@ -32,6 +32,9 @@ UI 检测（YOLO，可选）：
 - Qwen-VL（DashScope OpenAI 兼容模式）：`DASHSCOPE_API_KEY=... python3 -m wechat_agent.app.main --platform macos --contact 你的联系人 --recent 5 --vlm-provider qwen --qwen-model qwen2.5-vl-7b-instruct`
 - 外部命令（自定义）：`python3 -m wechat_agent.app.main --platform macos --contact 你的联系人 --recent 5 --vlm-provider cmd --llm-fallback-cmd 'python3 scripts/llm_fallback.py --image {image_path}'`
 
+项目结构：
+
+```text
 wechat_agent/
 ├─ app/
 │  ├─ main.py                  # 程序入口
@@ -46,9 +49,9 @@ wechat_agent/
 │  └─ errors.py                # 异常定义
 │
 ├─ platform/
-│  ├─ ports.py                  # Window/Screen/Input/A11y 抽象（跨平台）
-│  ├─ macos/                    # macOS 实现（窗口/截图/输入）
-│  └─ windows/                  # Windows 实现（窗口/截图/输入）(参考 https://github.com/Hello-Mr-Crab/pywechat/blob/main/Weixin4.0.md)
+│  ├─ ports.py                 # Window/Screen/Input/A11y 抽象（跨平台）
+│  ├─ macos/                   # macOS 实现（窗口/截图/输入）
+│  └─ windows/                 # Windows 实现（窗口/截图/输入）（参考 https://github.com/Hello-Mr-Crab/pywechat/blob/main/Weixin4.0.md）
 │
 ├─ perception/
 │  ├─ ocr.py                   # OCR封装
@@ -85,5 +88,5 @@ wechat_agent/
    ├─ screenshots/
    ├─ samples/
    └─ models/
-
+```
 
