@@ -37,7 +37,7 @@ def capture_wechat_window(window: WindowInfo, path: str) -> dict:
     # -l captures a specific window by its window id.
     # https://ss64.com/mac/screencapture.html (built-in)
     result = subprocess.run(
-        ["screencapture", "-x", "-l", str(window.native_id), path],
+        ["screencapture", "-x", "-o", "-l", str(window.native_id), path],
         check=False,
         capture_output=True,
         text=True,

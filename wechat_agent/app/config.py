@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -17,3 +17,6 @@ class AppConfig:
     openai_model: str | None = None
     qwen_model: str | None = None
     qwen_base_url: str | None = None
+    # SendGuard options
+    whitelist: tuple[str, ...] = ()
+    cooldown_seconds: float = 30.0

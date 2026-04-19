@@ -43,7 +43,7 @@ def detect_ui_elements(
     *,
     templates_dir: str,
     threshold: float = 0.78,
-    scales: tuple[float, ...] = (0.85, 0.95, 1.0, 1.1, 1.25),
+    scales: tuple[float, ...] = (0.85, 0.95, 1.0, 1.25, 1.5, 2.0),
     max_per_label: int = 3,
     nms_iou: float = 0.3,
 ) -> list[UiElement]:

@@ -38,6 +38,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="DashScope OpenAI 兼容 base_url（默认 https://dashscope.aliyuncs.com/compatible-mode/v1）",
     )
+    parser.add_argument(
+        "--whitelist",
+        default=None,
+        help="允许发送的联系人/群名，逗号分隔（空则不限制）",
+    )
+    parser.add_argument(
+        "--cooldown",
+        type=float,
+        default=30.0,
+        help="同一联系人两次发送的最短间隔（秒，默认 30）",
+    )
     return parser
 
 
@@ -45,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    whitelist = tuple(w.strip() for w in (args.whitelist or "").split(",") if w.strip())
     config = AppConfig(
         platform=args.platform,
         contact_name=args.contact,
@@ -58,6 +70,8 @@ def main(argv: list[str] | None = None) -> int:
         openai_model=args.openai_model,
         qwen_model=args.qwen_model,
         qwen_base_url=args.qwen_base_url,
+        whitelist=whitelist,
+        cooldown_seconds=float(args.cooldown),
     )
     run_dir, exit_code = run_once(config)
     print(str(Path(run_dir).resolve()))

@@ -28,20 +28,22 @@ def detect_ui_elements_openai(
     prompt = _build_prompt(labels)
 
     client = OpenAI()
-    resp = client.responses.create(
+    resp = client.chat.completions.create(
         model=model,
-        text={"format": {"type": "json_object"}},
-        input=[
+        messages=[
             {
                 "role": "user",
                 "content": [
-                    {"type": "input_text", "text": prompt},
-                    {"type": "input_image", "image_url": image_url},
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": image_url}},
                 ],
             }
         ],
+        response_format={"type": "json_object"},
+        temperature=0,
     )
-    return parse_elements_json(getattr(resp, "output_text", "") or "")
+    content = (resp.choices[0].message.content or "") if resp and resp.choices else ""
+    return parse_elements_json(content)
 
 
 def _build_prompt(labels: list[str]) -> str:

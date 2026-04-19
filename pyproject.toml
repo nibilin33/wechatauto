@@ -1,17 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "wechatauto"
 version = "0.1.0"
 description = "Cross-platform WeChat PC automation agent (vision-first)."
-requires-python = ">=3.11"
-dependencies = []
+requires-python = ">=3.9"
+dependencies = [
+  # Computer vision — template matching, image I/O, crop/resize
+  "opencv-python>=4.8",
+  "numpy>=1.24",
+  # Windows UI Automation for direct control-tree access
+  "uiautomation>=2.0; sys_platform=='win32'",
+  # macOS OCR via Vision.framework (objc bridge, macOS only)
+  "pyobjc-core>=10.0; sys_platform=='darwin'",
+  "pyobjc-framework-Cocoa>=10.0; sys_platform=='darwin'",
+  "pyobjc-framework-Vision>=10.0; sys_platform=='darwin'",
+  "pyobjc-framework-Quartz>=10.0; sys_platform=='darwin'",
+]
 
 [project.optional-dependencies]
 vlm = [
-  "openai>=1.0.0",
+  # OpenAI / Qwen-VL fallback
+  "openai>=1.30",
+]
+yolo = [
+  # YOLO UI element detector
+  "ultralytics>=8.0",
+]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.4",
 ]
 
 [project.scripts]
 wechatauto = "wechat_agent.app.cli:main"
+wechatauto-replay = "wechat_agent.storage.replay:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.setuptools.packages.find]
+include = ["wechat_agent*"]
